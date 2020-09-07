@@ -1,0 +1,7 @@
+.env
+__pycache__/
+/static/
+local_settings.py
+*.log
+*.pot
+*.pyc
