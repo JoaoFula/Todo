@@ -9,6 +9,8 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.conf import settings
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 def home(request):
     return render(request, 'todo/home.html')
@@ -23,13 +25,17 @@ def signup_user(request):
                 user = User.objects.create_user(request.POST['username'], request.POST['email'], password = request.POST['password1'])
                 user.save()
                 login(request, user)
+                user.confirmation = False
                 ############################## mailing system##############################
                 print(settings.EMAIL_HOST_PASSWORD)
                 subject = 'Thank you for registering to our site'
-                message = ' it  means a world to us '
+                message = render_to_string('todo/mail_template.html', {'user': user})
+                plain_message = strip_tags(message)
                 email_from = settings.EMAIL_HOST_USER
                 recipient_list = [user.email, ]
-                send_mail(subject, message, email_from, recipient_list)
+                send_mail(subject, plain_message, email_from, recipient_list, html_message=message)
+
+
                 return redirect('current_todos')
             except IntegrityError:
                 return render(request, 'todo/signup_user.html',
@@ -56,6 +62,9 @@ def logout_user(request):
     if request.method == 'POST':
         logout(request)
         return redirect('home')
+
+
+
 
 ############################ TODOS #######################################
 
